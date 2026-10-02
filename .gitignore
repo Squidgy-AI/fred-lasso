@@ -1,0 +1,12 @@
+data/raw/
+data/clips/
+data/out/
+*.webm
+*.mp4
+*.wav
+__pycache__/
+*.pyc
+.venv/
+.env
+config.local
+docs/PLAN.md

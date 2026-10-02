@@ -1,0 +1,201 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fred Lasso</title>
+<style>
+  :root{
+    --bg:#0d1117; --panel:#161b22; --panel-2:#1c2230; --line:#2a3240;
+    --ink:#e6edf3; --muted:#8b949e; --accent:#2ea043; --accent-2:#58a6ff;
+    --warn:#d29922; color-scheme:dark;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:1180px;margin:0 auto;padding:24px 16px 64px}
+  header{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:4px}
+  h1{font-size:30px;margin:0;letter-spacing:-.02em}
+  h1 span{color:var(--accent)}
+  .tag{font-size:12px;color:var(--muted);border:1px solid var(--line);
+       padding:3px 9px;border-radius:999px}
+  .sub{color:var(--muted);margin:6px 0 22px;max-width:70ch}
+  .askbar{display:flex;gap:10px;flex-wrap:wrap}
+  input[type=text]{flex:1 1 420px;min-width:240px;background:var(--panel);color:var(--ink);
+    border:1px solid var(--line);border-radius:10px;padding:13px 15px;font-size:16px}
+  input[type=text]:focus{outline:2px solid var(--accent-2);outline-offset:-1px}
+  button{background:var(--accent);color:#fff;border:0;border-radius:10px;
+    padding:13px 20px;font-size:15px;font-weight:600;cursor:pointer}
+  button:hover{filter:brightness(1.1)} button:disabled{opacity:.5;cursor:default}
+  button.ghost{background:transparent;color:var(--accent-2);border:1px solid var(--line)}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 24px}
+  .chip{background:var(--panel);border:1px solid var(--line);color:var(--muted);
+    border-radius:999px;padding:7px 13px;font-size:13px;cursor:pointer}
+  .chip:hover{color:var(--ink);border-color:var(--accent-2)}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:18px;margin-bottom:18px}
+  .answer{font-size:17px;line-height:1.55}
+  .filter{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;
+    color:var(--muted);margin-top:12px;padding-top:12px;border-top:1px dashed var(--line);
+    word-break:break-word}
+  .filter b{color:var(--accent-2);font-weight:600}
+  .grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(330px,1fr))}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;
+    display:flex;flex-direction:column}
+  .card video{width:100%;aspect-ratio:16/9;background:#000;display:block}
+  .card .body{padding:13px 14px 15px}
+  .card .row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .match{font-weight:600;font-size:14px}
+  .clock{font-family:ui-monospace,Menlo,monospace;color:var(--accent-2);font-size:13px}
+  .badge{display:inline-block;background:var(--panel-2);border:1px solid var(--line);
+    border-radius:6px;padding:3px 9px;font-size:12.5px;margin-top:9px}
+  .badge.hi{border-color:var(--accent);color:var(--accent)}
+  .badge.lo{border-color:var(--warn);color:var(--warn)}
+  .why{color:var(--muted);font-size:12.5px;margin-top:10px;max-height:4.6em;overflow:hidden}
+  .why.open{max-height:none}
+  .why b{color:var(--ink);font-weight:600}
+  .meta{color:var(--muted);font-size:11.5px;margin-top:9px;
+    font-family:ui-monospace,Menlo,monospace}
+  .stats{display:flex;gap:18px;flex-wrap:wrap;color:var(--muted);font-size:13px}
+  .stats b{color:var(--ink)}
+  .empty{color:var(--muted);padding:26px 0;text-align:center}
+  .err{color:#f85149}
+  footer{color:var(--muted);font-size:12px;margin-top:34px;border-top:1px solid var(--line);
+    padding-top:16px;line-height:1.7}
+  footer a{color:var(--accent-2)}
+</style>
+<div class="wrap">
+  <header>
+    <h1>Fred <span>Lasso</span></h1>
+    <span class="tag">football video analyst</span>
+    <span class="tag">VAST Builders Challenge</span>
+  </header>
+  <p class="sub">Ask a compositional question about hours of football. One embedding search
+    can't answer "crosses that led to a goal" — so Fred finds the goals, cuts the build-up
+    that preceded each one, and asks NVIDIA Cosmos a constrained question about a clip the
+    index never saw.</p>
+
+  <div class="askbar">
+    <input type="text" id="q" placeholder="show me all crosses that led to a goal"
+           autocomplete="off">
+    <button id="go">Ask Fred</button>
+    <button class="ghost" id="reel">Cut the reel</button>
+  </div>
+  <div class="chips" id="chips"></div>
+
+  <div class="panel" id="answer" hidden></div>
+  <div class="panel"><div class="stats" id="stats">loading…</div></div>
+  <div class="grid" id="results"></div>
+  <div class="empty" id="empty" hidden>No events yet. Run <code>python -m fred build &lt;video&gt;</code> first.</div>
+
+  <footer>
+    Footage: Wikimedia Commons, CC BY / CC BY-SA — 2018 FIFA U-17 Women's World Cup
+    New&nbsp;Zealand&nbsp;v&nbsp;Canada (CC BY-SA 4.0) and FC Utrecht v Ajax by
+    <a href="https://www.youtube.com/@fcufan">FCUFAN</a> (CC BY 3.0). No broadcast footage.<br>
+    Stack: NVIDIA Cosmos3-Reason + Cosmos Embed1 + Canary-1B on CoreWeave GPUs ·
+    VAST DataEngine, S3 and VastDB · Weights &amp; Biases serverless inference + Weave · Cursor.
+  </footer>
+</div>
+<script>
+const SUGGESTIONS = [
+  "show me all crosses that led to a goal",
+  "goals from set pieces",
+  "any screamers from outside the box?",
+  "scrappy goals and rebounds",
+  "which goals is Fred least sure about?",
+  "what happened in the Utrecht match?"
+];
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c =>
+  ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const clock = t => `${String(Math.floor(t/60)).padStart(2,"0")}:${String(Math.floor(t%60)).padStart(2,"0")}`;
+
+function chips(){
+  $("#chips").innerHTML = SUGGESTIONS.map(s =>
+    `<span class="chip" data-q="${esc(s)}">${esc(s)}</span>`).join("");
+  $("#chips").onclick = e => {
+    const q = e.target.dataset.q;
+    if (q){ $("#q").value = q; ask(); }
+  };
+}
+
+function card(ev){
+  const conf = Number(ev.confidence || 0);
+  const cls = conf >= 0.7 ? "hi" : (conf > 0 ? "lo" : "");
+  const src = ev.clip_path ? "/media/" + ev.clip_path.split("/").map(encodeURIComponent).join("/") : "";
+  const why = ev.cosmos_reasoning
+    ? `<div class="why"><b>Cosmos:</b> ${esc(ev.cosmos_reasoning)}</div>` : "";
+  return `<div class="card">
+    ${src ? `<video controls preload="metadata" src="${src}"></video>` : ""}
+    <div class="body">
+      <div class="row"><span class="match">${esc(ev.match)}</span>
+        <span class="clock">${clock(ev.t_anchor)}</span></div>
+      <span class="badge ${cls}">${esc(ev.assist_type || "unclassified")}${
+        conf ? ` · ${conf.toFixed(2)}` : ""}</span>
+      ${why}
+      <div class="meta">anchor: ${esc(ev.anchor_sources || "-")} (${Number(ev.anchor_score||0).toFixed(2)})</div>
+    </div></div>`;
+}
+
+function render(list){
+  $("#results").innerHTML = list.map(card).join("");
+  $("#empty").hidden = list.length > 0;
+  document.querySelectorAll(".why").forEach(el =>
+    el.onclick = () => el.classList.toggle("open"));
+}
+
+async function stats(){
+  try{
+    const s = await (await fetch("/api/stats")).json();
+    const kinds = Object.entries(s.by_assist_type || {})
+      .filter(([k]) => k && k !== "unknown")
+      .map(([k,v]) => `${k} <b>${v}</b>`).join(" · ") || "none classified yet";
+    $("#stats").innerHTML =
+      `<span><b>${s.total_events}</b> verified events</span>
+       <span><b>${Object.keys(s.by_match||{}).length}</b> matches</span>
+       <span>${kinds}</span>`;
+  }catch(e){ $("#stats").textContent = "stats unavailable"; }
+}
+
+async function loadAll(){
+  const list = await (await fetch("/api/events")).json();
+  render(list); stats();
+}
+
+async function ask(){
+  const q = $("#q").value.trim();
+  if(!q) return;
+  $("#go").disabled = true; $("#go").textContent = "Thinking…";
+  try{
+    const r = await (await fetch("/api/ask?q=" + encodeURIComponent(q))).json();
+    const f = r.filter || {};
+    const types = (f.assist_types||[]).join(", ") || "any";
+    $("#answer").hidden = false;
+    $("#answer").innerHTML =
+      `<div class="answer">${esc(r.answer)}</div>
+       <div class="filter">compiled filter → assist_type ∈ [<b>${esc(types)}</b>]` +
+      (f.match ? ` · match ~ <b>${esc(f.match)}</b>` : "") +
+      (f.min_confidence ? ` · confidence ≥ <b>${f.min_confidence}</b>` : "") +
+      (f._fallback ? ` · <b>keyword fallback</b>` : "") +
+      (f.explanation ? `<br>read as: ${esc(f.explanation)}` : "") + `</div>`;
+    render(r.events || []);
+    if ((r.events||[]).length === 0 && r.used_semantic_fallback)
+      $("#empty").hidden = false;
+  }catch(e){
+    $("#answer").hidden = false;
+    $("#answer").innerHTML = `<div class="answer err">${esc(e)}</div>`;
+  }finally{
+    $("#go").disabled = false; $("#go").textContent = "Ask Fred";
+  }
+}
+
+$("#go").onclick = ask;
+$("#q").onkeydown = e => { if(e.key === "Enter") ask(); };
+$("#reel").onclick = async () => {
+  $("#reel").disabled = true; $("#reel").textContent = "Cutting…";
+  try{
+    const r = await (await fetch("/api/reel")).json();
+    if(r.reel) window.open(r.reel, "_blank");
+    else alert(r.error || "no reel");
+  }finally{ $("#reel").disabled = false; $("#reel").textContent = "Cut the reel"; }
+};
+chips(); loadAll();
+</script>

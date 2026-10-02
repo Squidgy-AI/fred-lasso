@@ -1,0 +1,14 @@
+# Core - needed everywhere
+requests>=2.31
+numpy>=1.24
+
+# Sponsor integrations. Present on the workshop VM; optional locally, and every
+# import of them in this codebase is guarded so the demo degrades instead of dying.
+weave>=0.51
+wandb>=0.17
+
+# VastDB event table (Linux + VAST cluster only; SQLite mirrors every write)
+vastdb>=2.0.3
+pyarrow>=15.0.0
+
+# ffmpeg and ffprobe must be on PATH - not pip-installable

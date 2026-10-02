@@ -1,0 +1,10 @@
+match,t_anchor,is_goal,assist_type,evidence,labelled_by
+utrecht_ajax_mar2020,1016,yes,,"burned-in caption '1-0 van de Streek' at this moment; final score 2-0 per Commons description",human
+utrecht_ajax_mar2020,1464,yes,,"burned-in caption '2-0 Gustafson' at this moment",human
+utrecht_ajax_mar2020,9,no,,"opening seconds: supporters outside the ground with police vans, no match action",human
+utrecht_ajax_mar2020,105,no,,"red flare in the stand, no match action",human
+utrecht_ajax_mar2020,1641,no,,"crowd shot; match finished 2-0 so no third goal exists",human
+u17_nzl_can_match,80,,,"UNLABELLED - run scripts/label.py",
+u17_nzl_can_match,218,,,"UNLABELLED - run scripts/label.py",
+utrecht_ajax_dec2018,207,yes,,"burned-in caption '1-2 Venema' at this moment; Eredivisie Dec 2018 finished 1-3",human
+utrecht_ajax_dec2018,13,no,,"pre-match: supporters walking outside the ground past police vans, no match action",human
